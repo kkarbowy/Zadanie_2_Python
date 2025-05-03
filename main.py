@@ -52,17 +52,46 @@ class Order:
     def __init__(self, cart, inventory):
         self.cart = cart
         self.inventory = inventory
-        self.status = "Pending"
+        self.status = "Oczekujące"
         self.total = cart.calculate_total()
 
     def process(self):
         print("Przetwarzanie zamówienia...")
         for prod, qty in self.cart.items.items():
             if self.inventory.get_stock(prod) < qty:
-                self.status = "Failed"
+                self.status = "Nieudane"
                 print(f"Nie można zrealizować: {prod.name} (potrzeba {qty})")
                 return
         for prod, qty in self.cart.items.items():
             self.inventory.remove_stock(prod, qty)
-        self.status = "Completed"
+        self.status = "Zrealizowane"
         print("Zamówienie zrealizowane.")
+
+if __name__ == "__main__":
+    tshirt = Product("TSH001", "Koszulka Polo - M", 79.99)
+    jeans = Product("JNS001", "Jeansy Slim - S", 199.50)
+    hat = Product("HT001", "Czapka zimowa - S", 49.00)
+
+    inv = Inventory()
+    inv.add_stock(tshirt, 1)
+    inv.add_stock(jeans, 5)
+    inv.add_stock(hat, 20)
+
+    cart = ShoppingCart()
+    cart.add_product(tshirt, 3)
+    cart.add_product(jeans, 1)
+    cart.remove_product(jeans, 1)
+    cart.list_items()
+    print(f"Do zapłaty: {cart.calculate_total():.2f} zł\n")
+
+    order = Order(cart, inv)
+    order.process()
+    print(f"Status zamówienia: {order.status}")
+    print(f"Pozostały stan Tshirt: {inv.get_stock(tshirt)} szt.")
+
+    print(f"\nUzupełniam stan koszulek...\n")
+
+    inv.add_stock(tshirt, 15)
+    order.process()
+    print(f"Status zamówienia: {order.status}")
+    print(f"Pozostały stan Tshirt: {inv.get_stock(tshirt)} szt.")
